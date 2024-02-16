@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: application
+      MYSQL_PASSWORD: root
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+        - backend
+  app:
+    image: openjdk:23
+    container_name: app
+    volumes:
+      - ./target/Application-0.0.1.jar:/app.jar
+    entrypoint: ["java", "-jar", "/app.jar"]
+    ports:
+      - "8080:8080"
+    environment:
+      - spring.datasource.url=jdbc:mysql://mysql:3306/application
+    hostname: localhost
+    depends_on:
+        - mysql
+    networks:
+        - backend
+  front:
+   image: node
+   depends_on:
+     - app
+   container_name: front
+   ports:
+     - "3000:3000"
+
+   working_dir: /app
+   volumes:
+     - ./front/:/app
+   command: npm run preview
+   networks:
+       - backend
+
+volumes:
+  mysql-data:
+networks:
+    backend:
+
+    
+
+
+
