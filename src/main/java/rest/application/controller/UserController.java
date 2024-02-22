@@ -1,5 +1,7 @@
 package rest.application.controller;
 
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
+import org.springframework.http.HttpStatus;
 import rest.application.exception.UserNotFoundException;
 import rest.application.model.User;
 import rest.application.repository.UserRepository;
@@ -8,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-
+@DependsOnDatabaseInitialization
 @CrossOrigin(value = "http://localhost:3000")
 public class UserController {
 
@@ -20,6 +22,7 @@ public class UserController {
 
     //Create user
     @PostMapping(value = "/users")
+    @ResponseStatus(HttpStatus.CREATED)
     User newUser(@RequestBody User newUser) {
         return repository.save(newUser);
     }
@@ -33,20 +36,18 @@ public class UserController {
     //show info for a user
     @GetMapping(value = "/users/{id}")
     User getUserById(@PathVariable Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        return repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     //update user
     @PutMapping(value = "/users/{id}")
     User updateUser(@RequestBody User newUser, @PathVariable Long id) {
-        return repository.findById(id)
-                .map(user -> {
-                    user.setUsername(newUser.getUsername());
-                    user.setEmail(newUser.getEmail());
-                    user.setName(newUser.getName());
-                    return repository.save(user);
-                }).orElseThrow(() -> new UserNotFoundException(id));
+        return repository.findById(id).map(user -> {
+            user.setUsername(newUser.getUsername());
+            user.setEmail(newUser.getEmail());
+            user.setName(newUser.getName());
+            return repository.save(user);
+        }).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     //delete user
